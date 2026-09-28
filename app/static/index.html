@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nexus - Intelligent Model Router</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0e1a; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+        @keyframes route-line { 0% { width: 0; } 100% { width: 100%; } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .pulse-ring { animation: pulse-ring 1.2s ease-out infinite; }
+        .model-card { transition: all 0.3s ease; border: 2px solid transparent; }
+        .model-card:hover { border-color: rgba(99,102,241,0.5); transform: translateY(-2px); }
+        .model-card.selected { border-color: #818cf8; box-shadow: 0 0 20px rgba(99,102,241,0.3); }
+        .model-card.dimmed { opacity: 0.3; }
+        .route-line { animation: route-line 0.8s ease-out forwards; height: 3px; background: linear-gradient(90deg, #818cf8, #34d399); }
+        .stage-card { transition: all 0.3s ease; }
+        .artifact-tab { transition: all 0.2s; }
+        .artifact-tab.active { background: rgba(99,102,241,0.2); border-color: #818cf8; }
+        .upload-zone { transition: all 0.2s; }
+        .upload-zone.drag-over { border-color: #818cf8; background: rgba(99,102,241,0.1); }
+        .upload-zone.has-file { border-color: #34d399; background: rgba(52,211,153,0.05); }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
+                    <i data-lucide="brain" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white">AI NEXUS</h1>
+                    <p class="text-xs text-slate-400">Intelligent Model Router</p>
+                </div>
+            </div>
+            <div id="health-badge" class="flex items-center gap-2 text-xs bg-slate-800 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span id="health-text" class="text-slate-400">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Hero + Model Cards Section -->
+        <section id="hero-section">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">Ask Anything. We Route to the Right AI.</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Our intelligent router analyzes your query and automatically selects the best domain-specific AI model from our registry of 5 specialized models.</p>
+            </div>
+
+            <!-- 5 Model Cards -->
+            <div id="model-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div class="model-card rounded-xl bg-slate-800/60 p-5 cursor-default" data-model="code_generator">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center mb-3">
+                        <i data-lucide="code" class="w-5 h-5 text-blue-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Code Generator</h3>
+                    <p class="text-xs text-slate-400">Generates production-quality Python code from specifications and requirements</p>
+                </div>
+                <div class="model-card rounded-xl bg-slate-800/60 p-5 cursor-default" data-model="test_engineer">
+                    <div class="w-10 h-10 rounded-lg bg-amber-600/20 flex items-center justify-center mb-3">
+                        <i data-lucide="flask-conical" class="w-5 h-5 text-amber-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Test Engineer</h3>
+                    <p class="text-xs text-slate-400">Creates test specs, generates pytest cases, and executes them with full reports</p>
+                </div>
+                <div class="model-card rounded-xl bg-slate-800/60 p-5 cursor-default" data-model="doc_analyzer">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-600/20 flex items-center justify-center mb-3">
+                        <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Document Analyzer</h3>
+                    <p class="text-xs text-slate-400">Analyzes documents, extracts insights, generates summaries and key findings</p>
+                </div>
+                <div class="model-card rounded-xl bg-slate-800/60 p-5 cursor-default" data-model="data_analytics">
+                    <div class="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center mb-3">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Data Analytics</h3>
+                    <p class="text-xs text-slate-400">Generates analysis code, statistical insights, and visualization scripts</p>
+                </div>
+                <div class="model-card rounded-xl bg-slate-800/60 p-5 cursor-default" data-model="general_qa">
+                    <div class="w-10 h-10 rounded-lg bg-teal-600/20 flex items-center justify-center mb-3">
+                        <i data-lucide="message-circle" class="w-5 h-5 text-teal-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">General Q&A</h3>
+                    <p class="text-xs text-slate-400">Answers general questions, provides information and explanations</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Query Input Section -->
+        <section id="input-section" class="mb-8">
+            <div class="bg-slate-800/40 rounded-xl border border-slate-700 p-6">
+                <label class="block text-sm font-medium text-slate-300 mb-2">
+                    <i data-lucide="message-square" class="w-4 h-4 inline mr-1"></i>
+                    What would you like the AI to do?
+                </label>
+                <textarea id="query-input" rows="4"
+                    class="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 resize-none"
+                    placeholder="e.g., 'Build a REST API for user authentication with JWT tokens' or 'Analyze this document and summarize the key findings'"></textarea>
+
+                <!-- File Upload Area -->
+                <div id="upload-zone" class="upload-zone mt-3 border-2 border-dashed border-slate-600 rounded-lg p-4 text-center cursor-pointer"
+                     ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(event)"
+                           accept=".txt,.md,.py,.js,.ts,.java,.go,.json,.yaml,.yml,.csv,.log,.xml,.html,.css,.pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.svg,.sql,.sh,.cfg,.conf,.properties,.gradle">
+                    <div id="upload-prompt">
+                        <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-500 mx-auto mb-1"></i>
+                        <p class="text-xs text-slate-400">Drag & drop a file here or <span class="text-indigo-400 underline">browse</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Supports: .txt, .md, .py, .json, .csv, .pdf, images (.png, .jpg)</p>
+                    </div>
+                    <div id="upload-preview" class="hidden">
+                        <div class="flex items-center justify-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center">
+                                <i data-lucide="file-check" class="w-4 h-4 text-emerald-400"></i>
+                            </div>
+                            <div class="text-left">
+                                <p id="upload-filename" class="text-sm font-medium text-emerald-400"></p>
+                                <p id="upload-fileinfo" class="text-xs text-slate-400"></p>
+                            </div>
+                            <button onclick="clearUpload(event)" class="ml-4 text-slate-400 hover:text-red-400 p-1">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-3">
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="loadExample('code')" class="text-xs px-3 py-1.5 bg-blue-900/40 text-blue-300 rounded-lg hover:bg-blue-900/60 border border-blue-800/50">Code</button>
+                        <button onclick="loadExample('test')" class="text-xs px-3 py-1.5 bg-amber-900/40 text-amber-300 rounded-lg hover:bg-amber-900/60 border border-amber-800/50">Test</button>
+                        <button onclick="loadExample('doc')" class="text-xs px-3 py-1.5 bg-emerald-900/40 text-emerald-300 rounded-lg hover:bg-emerald-900/60 border border-emerald-800/50">Doc</button>
+                        <button onclick="loadExample('data')" class="text-xs px-3 py-1.5 bg-purple-900/40 text-purple-300 rounded-lg hover:bg-purple-900/60 border border-purple-800/50">Data</button>
+                        <button onclick="loadExample('qa')" class="text-xs px-3 py-1.5 bg-teal-900/40 text-teal-300 rounded-lg hover:bg-teal-900/60 border border-teal-800/50">Q&A</button>
+                    </div>
+                    <button onclick="startPipeline()" id="run-btn"
+                        class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg flex items-center gap-2 transition">
+                        <i data-lucide="zap" class="w-4 h-4"></i> Run AI Agent
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Routing Visualization -->
+        <section id="routing-section" class="hidden mb-8">
+            <div class="bg-slate-800/40 rounded-xl border border-slate-700 p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <i data-lucide="route" class="w-5 h-5 text-indigo-400"></i>
+                    <h3 class="font-semibold text-white">Intelligent Routing</h3>
+                </div>
+                <div id="routing-status" class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-indigo-500 pulse-ring"></div>
+                        <span class="text-sm text-slate-300">Analyzing query...</span>
+                    </div>
+                </div>
+                <div id="routing-result" class="hidden mt-4 p-4 bg-slate-900/60 rounded-lg border border-indigo-500/30">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Routed to:</p>
+                            <p id="routed-model-name" class="text-lg font-bold text-indigo-400"></p>
+                            <p id="routed-model-desc" class="text-xs text-slate-400 mt-1"></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-slate-400 mb-1">Confidence</p>
+                            <p id="routing-confidence" class="text-2xl font-bold text-emerald-400"></p>
+                            <p id="routing-method" class="text-xs text-slate-500 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pipeline Execution Section -->
+        <section id="pipeline-section" class="hidden mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Pipeline Stages (left) -->
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="git-branch" class="w-5 h-5 text-indigo-400"></i>
+                        <h3 class="font-semibold text-white">Pipeline Stages</h3>
+                    </div>
+                    <div id="stages-container" class="space-y-3"></div>
+                </div>
+
+                <!-- Live Output (right) -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="terminal" class="w-5 h-5 text-indigo-400"></i>
+                        <h3 class="font-semibold text-white">Live Output</h3>
+                    </div>
+                    <div id="live-log" class="bg-slate-900 rounded-xl border border-slate-700 p-4 h-[400px] overflow-y-auto text-sm space-y-1 font-mono"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Artifacts Section -->
+        <section id="artifacts-section" class="hidden mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="package" class="w-5 h-5 text-indigo-400"></i>
+                <h3 class="font-semibold text-white">Generated Artifacts</h3>
+            </div>
+            <div id="artifact-tabs" class="flex gap-2 mb-4 flex-wrap"></div>
+            <div id="artifact-content" class="bg-slate-900 rounded-xl border border-slate-700 p-4">
+                <pre id="artifact-code" class="text-sm text-slate-300 whitespace-pre-wrap overflow-auto max-h-[500px]"></pre>
+            </div>
+        </section>
+
+        <!-- Run Again -->
+        <div id="run-again" class="hidden text-center mb-8">
+            <button onclick="resetUI()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg inline-flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Run New Query
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const EXAMPLES = {
+            code: `Build a task management system with the following features:
+- Task class with id, title, description, status, priority, timestamps
+- TaskManager class with add, get, list, complete, delete, and stats methods
+- Input validation and error handling
+- Type hints and docstrings`,
+            test: `Write comprehensive tests for a user authentication module that has:
+- register(username, password) - creates new user
+- login(username, password) - returns JWT token
+- verify_token(token) - validates JWT
+- change_password(user_id, old_pass, new_pass)
+Cover edge cases, security tests, and error handling.`,
+            doc: `Analyze this software architecture document:
+
+The system uses a microservices architecture with 5 services:
+1. API Gateway (nginx) - handles routing and rate limiting
+2. Auth Service (Python/FastAPI) - JWT-based authentication
+3. User Service (Go) - user CRUD operations with PostgreSQL
+4. Notification Service (Node.js) - email/SMS via queues
+5. Analytics Service (Python) - data processing with Spark
+
+Services communicate via RabbitMQ for async operations and gRPC for sync calls.
+Deployment is on Kubernetes with Helm charts. CI/CD via GitHub Actions.`,
+            data: `Analyze a dataset of employee performance reviews with these columns:
+- employee_id, department, role, years_experience
+- performance_score (1-10), review_date, reviewer_id
+- goals_met (percentage), training_hours, promotions
+
+Generate analysis code that:
+1. Shows performance distribution by department
+2. Correlation between training hours and performance
+3. Promotion rate analysis by experience level
+4. Monthly trend visualization
+5. Generate a summary dashboard with 4 charts`,
+            qa: `Who is the current Prime Minister of India? Provide details about their political party, when they took office, and their major policy initiatives.`
+        };
+
+        let fullArtifacts = {};
+        let uploadedFileContent = null;
+        let uploadedFileName = null;
+
+        // File upload handlers
+        function handleDragOver(e) { e.preventDefault(); document.getElementById("upload-zone").classList.add("drag-over"); }
+        function handleDragLeave(e) { e.preventDefault(); document.getElementById("upload-zone").classList.remove("drag-over"); }
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById("upload-zone").classList.remove("drag-over");
+            if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+        }
+        function handleFileSelect(e) { if (e.target.files.length > 0) uploadFile(e.target.files[0]); }
+
+        async function uploadFile(file) {
+            const zone = document.getElementById("upload-zone");
+            const prompt = document.getElementById("upload-prompt");
+            const preview = document.getElementById("upload-preview");
+
+            prompt.innerHTML = '<p class="text-xs text-indigo-400">Uploading...</p>';
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const r = await fetch("/api/upload", { method: "POST", body: formData });
+                const data = await r.json();
+                if (data.error) { prompt.innerHTML = `<p class="text-xs text-red-400">Error: ${data.error}</p>`; return; }
+
+                uploadedFileContent = data.content;
+                uploadedFileName = data.file_info.filename;
+
+                document.getElementById("upload-filename").textContent = data.file_info.filename;
+                document.getElementById("upload-fileinfo").textContent = `${data.file_info.size_display} · ${data.file_info.type}` +
+                    (data.file_info.lines ? ` · ${data.file_info.lines} lines` : '');
+
+                prompt.classList.add("hidden");
+                preview.classList.remove("hidden");
+                zone.classList.add("has-file");
+                lucide.createIcons();
+
+                // Auto-fill query if empty
+                const queryInput = document.getElementById("query-input");
+                if (!queryInput.value.trim()) {
+                    const type = data.file_info.type;
+                    if (type === "image") queryInput.value = `Analyze this uploaded image (${uploadedFileName}) and describe its contents, architecture, and key elements.`;
+                    else if (type === "data") queryInput.value = `Analyze the uploaded data file (${uploadedFileName}) and provide statistical insights, patterns, and visualization recommendations.`;
+                    else if (type === "code") queryInput.value = `Analyze the uploaded code file (${uploadedFileName}), review its quality, and suggest improvements.`;
+                    else queryInput.value = `Analyze the uploaded document (${uploadedFileName}) and provide a comprehensive summary with key findings.`;
+                }
+            } catch (err) {
+                prompt.innerHTML = `<p class="text-xs text-red-400">Upload failed: ${err.message}</p>`;
+            }
+        }
+
+        function clearUpload(e) {
+            e.stopPropagation();
+            uploadedFileContent = null;
+            uploadedFileName = null;
+            const zone = document.getElementById("upload-zone");
+            zone.classList.remove("has-file");
+            document.getElementById("upload-prompt").classList.remove("hidden");
+            document.getElementById("upload-prompt").innerHTML = `
+                <i data-lucide="upload-cloud" class="w-6 h-6 text-slate-500 mx-auto mb-1"></i>
+                <p class="text-xs text-slate-400">Drag & drop a file here or <span class="text-indigo-400 underline">browse</span></p>
+                <p class="text-xs text-slate-500 mt-1">Supports: .txt, .md, .py, .json, .csv, .pdf, images (.png, .jpg)</p>`;
+            document.getElementById("upload-preview").classList.add("hidden");
+            document.getElementById("file-input").value = "";
+            lucide.createIcons();
+        }
+
+        // Health check
+        async function checkHealth() {
+            try {
+                const r = await fetch("/api/health");
+                const d = await r.json();
+                const badge = document.getElementById("health-text");
+                const mode = d.demo_mode ? "DEMO" : d.provider?.toUpperCase();
+                badge.textContent = `${mode} · ${d.model} · ${d.available_models} models`;
+            } catch (e) {
+                document.getElementById("health-text").textContent = "Offline";
+            }
+        }
+        checkHealth();
+
+        function loadExample(type) {
+            document.getElementById("query-input").value = EXAMPLES[type] || "";
+        }
+
+        function addLog(message, type = "info") {
+            const log = document.getElementById("live-log");
+            const colors = { info: "text-slate-400", success: "text-emerald-400", error: "text-red-400", agent: "text-indigo-400", route: "text-amber-400" };
+            const icons = { info: "\u2192", success: "\u2713", error: "\u2717", agent: "\u26a1", route: "\ud83e\udde0" };
+            const div = document.createElement("div");
+            div.className = `${colors[type] || colors.info} fade-in`;
+            const time = new Date().toLocaleTimeString();
+            div.innerHTML = `<span class="text-slate-600 text-xs">[${time}]</span> ${icons[type] || "\u2192"} ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function addErrorDetail(error) {
+            const log = document.getElementById("live-log");
+            const div = document.createElement("div");
+            div.className = "fade-in mt-2 mb-2";
+            div.innerHTML = `<div class="bg-red-950/50 border border-red-500/30 rounded-lg p-3 text-xs">
+                <p class="text-red-400 font-semibold mb-1">Error Details:</p>
+                <pre class="text-red-300/80 whitespace-pre-wrap break-all max-h-[200px] overflow-auto">${escapeHtml(error)}</pre>
+            </div>`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const d = document.createElement("div");
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        function highlightModel(modelId) {
+            document.querySelectorAll(".model-card").forEach(card => {
+                if (card.dataset.model === modelId) {
+                    card.classList.add("selected");
+                    card.classList.remove("dimmed");
+                } else {
+                    card.classList.add("dimmed");
+                    card.classList.remove("selected");
+                }
+            });
+        }
+
+        function buildStages(stages) {
+            const container = document.getElementById("stages-container");
+            container.innerHTML = "";
+            stages.forEach((s, i) => {
+                const div = document.createElement("div");
+                div.id = `stage-${i + 1}`;
+                div.className = "stage-card bg-slate-800/60 rounded-lg p-4 border border-slate-700";
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-400" id="stage-icon-${i+1}">${i+1}</div>
+                        <div>
+                            <p class="font-medium text-white text-sm">${s.agent_name}</p>
+                            <p class="text-xs text-slate-400" id="stage-status-${i+1}">Waiting...</p>
+                        </div>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function updateStage(num, status, text) {
+            const card = document.getElementById(`stage-${num}`);
+            const icon = document.getElementById(`stage-icon-${num}`);
+            const statusEl = document.getElementById(`stage-status-${num}`);
+            if (!card) return;
+
+            if (status === "running") {
+                card.className = "stage-card bg-indigo-900/30 rounded-lg p-4 border border-indigo-500/50";
+                icon.className = "w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white pulse-ring";
+                statusEl.textContent = "Running...";
+                statusEl.className = "text-xs text-indigo-300";
+            } else if (status === "completed") {
+                card.className = "stage-card bg-emerald-900/20 rounded-lg p-4 border border-emerald-500/30";
+                icon.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+                icon.className = "w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white";
+                statusEl.textContent = text || "Completed";
+                statusEl.className = "text-xs text-emerald-400";
+                lucide.createIcons();
+            } else if (status === "failed") {
+                card.className = "stage-card bg-red-900/20 rounded-lg p-4 border border-red-500/30";
+                icon.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
+                icon.className = "w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white";
+                statusEl.textContent = text || "Failed";
+                statusEl.className = "text-xs text-red-400";
+                lucide.createIcons();
+            }
+        }
+
+        async function startPipeline() {
+            let query = document.getElementById("query-input").value.trim();
+            if (!query && !uploadedFileContent) { alert("Please enter a query or upload a file."); return; }
+
+            // Append uploaded file content to the query
+            if (uploadedFileContent) {
+                query = query + "\n\n--- UPLOADED FILE: " + uploadedFileName + " ---\n" + uploadedFileContent + "\n--- END FILE ---";
+            }
+
+            // Show routing + pipeline sections
+            document.getElementById("routing-section").classList.remove("hidden");
+            document.getElementById("pipeline-section").classList.remove("hidden");
+            document.getElementById("artifacts-section").classList.add("hidden");
+            document.getElementById("run-again").classList.add("hidden");
+            document.getElementById("live-log").innerHTML = "";
+            document.getElementById("stages-container").innerHTML = "";
+            document.getElementById("routing-result").classList.add("hidden");
+            document.getElementById("routing-status").classList.remove("hidden");
+            document.getElementById("run-btn").disabled = true;
+            document.getElementById("run-btn").classList.add("opacity-50");
+            fullArtifacts = {};
+
+            addLog("Query submitted. Routing to the best AI model...", "route");
+
+            try {
+                const response = await fetch("/api/pipeline/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query }),
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split("\n\n");
+                    buffer = lines.pop() || "";
+
+                    for (const line of lines) {
+                        if (!line.startsWith("data: ")) continue;
+                        try {
+                            const payload = JSON.parse(line.substring(6));
+                            handleEvent(payload);
+                        } catch (e) { /* ignore parse errors */ }
+                    }
+                }
+            } catch (err) {
+                addLog(`Connection error: ${err.message}`, "error");
+            }
+
+            document.getElementById("run-btn").disabled = false;
+            document.getElementById("run-btn").classList.remove("opacity-50");
+        }
+
+        function handleEvent(payload) {
+            const { event, data } = payload;
+            if (!event) return;
+
+            switch (event) {
+                case "routing_started":
+                    addLog("Analyzing query intent...", "route");
+                    break;
+
+                case "routing_completed":
+                    addLog(`Routed to <strong>${data.model_name}</strong> (${(data.confidence * 100).toFixed(0)}% confidence, method: ${data.method})`, "route");
+                    document.getElementById("routing-status").classList.add("hidden");
+                    document.getElementById("routing-result").classList.remove("hidden");
+                    document.getElementById("routed-model-name").textContent = data.model_name;
+                    document.getElementById("routed-model-desc").textContent = data.model_description;
+                    document.getElementById("routing-confidence").textContent = `${(data.confidence * 100).toFixed(0)}%`;
+                    document.getElementById("routing-method").textContent = `via ${data.method}`;
+                    highlightModel(data.selected_model);
+                    break;
+
+                case "pipeline_started":
+                    addLog(`Pipeline <strong>${data.run_id}</strong> started with ${data.total_stages} stages for <strong>${data.model_name}</strong>`, "agent");
+                    window._runId = data.run_id;
+                    // Build stage cards dynamically
+                    fetch(`/api/pipeline/${data.run_id}`).then(r => r.json()).then(run => {
+                        if (run.stages) buildStages(run.stages);
+                    }).catch(() => {});
+                    break;
+
+                case "stage_started":
+                    addLog(`<strong>Stage ${data.stage_number}: ${data.agent_name}</strong> \u2014 ${data.description}`, "agent");
+                    updateStage(data.stage_number, "running");
+                    break;
+
+                case "stage_completed":
+                    addLog(`Stage ${data.stage_number} completed in ${data.duration_seconds}s \u2014 ${data.summary}`, "success");
+                    updateStage(data.stage_number, "completed", `${data.summary.substring(0, 60)}${data.summary.length > 60 ? '...' : ''}`);
+                    break;
+
+                case "stage_failed":
+                    addLog(`Stage ${data.stage_number} FAILED`, "error");
+                    addErrorDetail(data.error);
+                    updateStage(data.stage_number, "failed", "Failed");
+                    break;
+
+                case "pipeline_completed":
+                    addLog(`Pipeline completed in ${data.total_duration_seconds}s via <strong>${data.model_name}</strong>`, "success");
+                    if (data.test_summary && data.test_summary.total > 0) {
+                        addLog(`Test Results: ${data.test_summary.passed}/${data.test_summary.total} passed (${data.test_summary.pass_rate})`, "success");
+                    }
+                    document.getElementById("run-again").classList.remove("hidden");
+                    loadArtifacts(data.run_id || window._runId);
+                    break;
+
+                case "pipeline_failed":
+                    addLog(`Pipeline failed at stage ${data.failed_at_stage}`, "error");
+                    addErrorDetail(data.error);
+                    document.getElementById("run-again").classList.remove("hidden");
+                    break;
+
+                case "stream_end":
+                    break;
+            }
+        }
+
+        async function loadArtifacts(runId) {
+            if (!runId) return;
+            try {
+                const r = await fetch(`/api/pipeline/${runId}/artifacts`);
+                fullArtifacts = await r.json();
+                const tabs = document.getElementById("artifact-tabs");
+                tabs.innerHTML = "";
+
+                let first = true;
+                for (const [agentName, artifacts] of Object.entries(fullArtifacts)) {
+                    for (const [key, value] of Object.entries(artifacts)) {
+                        if (typeof value !== "string") continue;
+                        const btn = document.createElement("button");
+                        btn.className = `artifact-tab px-3 py-1.5 text-xs rounded-lg border border-slate-600 text-slate-300 hover:border-indigo-500 ${first ? 'active' : ''}`;
+                        btn.textContent = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                        btn.onclick = () => {
+                            document.getElementById("artifact-code").textContent = value;
+                            document.querySelectorAll(".artifact-tab").forEach(t => t.classList.remove("active"));
+                            btn.classList.add("active");
+                        };
+                        tabs.appendChild(btn);
+                        if (first) {
+                            document.getElementById("artifact-code").textContent = value;
+                            first = false;
+                        }
+                    }
+                }
+
+                if (!first) {
+                    document.getElementById("artifacts-section").classList.remove("hidden");
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        function resetUI() {
+            document.getElementById("routing-section").classList.add("hidden");
+            document.getElementById("pipeline-section").classList.add("hidden");
+            document.getElementById("artifacts-section").classList.add("hidden");
+            document.getElementById("run-again").classList.add("hidden");
+            document.getElementById("live-log").innerHTML = "";
+            document.getElementById("stages-container").innerHTML = "";
+            document.querySelectorAll(".model-card").forEach(c => {
+                c.classList.remove("selected", "dimmed");
+            });
+            fullArtifacts = {};
+            // Clear uploaded file
+            if (uploadedFileContent) {
+                clearUpload(new Event('click'));
+            }
+            uploadedFileContent = null;
+            uploadedFileName = null;
+        }
+    </script>
+</body>
+</html>
